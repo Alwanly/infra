@@ -19,6 +19,8 @@ volumes:
     driver: local
   timescale:
     driver: local
+  vault:
+    driver: local
 
 # --- services
 services:
@@ -172,18 +174,18 @@ services:
 
   # questDB
   questdb:
-    container_name : questdb
+    container_name: questdb
     image: questdb/questdb:6.5.3
     ports:
-      - 9010:9000 
-      - 9009:9009 
-      - 8812:8812 
+      - 9010:9000
+      - 9009:9009
+      - 8812:8812
       - 9003:9003
     networks:
       - main_net
     volumes:
-      - questdb:/var/lib/questdb/db 
-      
+      - questdb:/var/lib/questdb/db
+
   timescaledb:
     container_name: timescaledb
     image: timescale/timescaledb-ha:pg14-latest
@@ -197,4 +199,20 @@ services:
       - main_net
     volumes:
       - timescale:/var/lib/timescale/data
-    
+
+    # vault to store env
+
+  vault:
+    container_name: vault
+    image: vault
+    ports:
+      - 8200:8200
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=myroot
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add: 
+      - IPC_LOCK
+    networks:
+      - main_net
+    volumes:
+      - vault:/var/lib/vault/data
