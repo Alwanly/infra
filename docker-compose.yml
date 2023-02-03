@@ -9,6 +9,8 @@ networks:
 volumes:
   mongodb:
     driver: local
+  mongodb2:
+    driver: local
   postgres:
     driver: local
   elasticsearch:
@@ -37,16 +39,20 @@ services:
   # mongodb
   mongodb:
     container_name: mongodb
-    image: mongo:4.2
+    image: mongo:4.4
+    command: ["--replSet", "my-replica-set", "--bind_ip_all"]
     ports:
       - 27017:27017
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=admin
+    #   - MONGO_INITDB_ROOT_PASSWORD=admin
     networks:
       - main_net
     volumes:
       - mongodb:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
+    links:
+      - mongodb2
   # minio
   minio:
     container_name: minio
@@ -210,9 +216,19 @@ services:
     environment:
       - VAULT_DEV_ROOT_TOKEN_ID=myroot
       - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
-    cap_add: 
+    cap_add:
       - IPC_LOCK
     networks:
       - main_net
     volumes:
       - vault:/var/lib/vault/data
+  mongodb2:
+    container_name: mongodb2
+    image: mongo:4.4
+    command: ["--replSet", "my-replica-set", "--bind_ip_all"]
+    volumes:
+      - mongodb2:/data2/db
+    ports:
+      - 27030:27017
+    networks:
+      - main_net
