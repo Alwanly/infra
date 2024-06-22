@@ -23,6 +23,8 @@ volumes:
     driver: local
   vault:
     driver: local
+  datadog:
+    driver: local
 
 # --- services
 services:
@@ -72,7 +74,7 @@ services:
   # postgresql
   postgresql:
     container_name: postgresql
-    image: postgres:11-alpine
+    image: postgres:latest
     ports:
       - 5432:5432
     environment:
@@ -87,7 +89,7 @@ services:
   # kafka zookeeper
   kafka_zookeeper:
     container_name: kafka-zookeeper
-    image: confluentinc/cp-zookeeper:7.0.1
+    image: confluentinc/cp-zookeeper:latest
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_TICK_TIME=2000
@@ -97,7 +99,7 @@ services:
   # kafka broker
   kafka_broker:
     container_name: kafka-broker
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:latest
     depends_on:
       - kafka_zookeeper
     ports:
@@ -110,13 +112,14 @@ services:
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
     networks:
       - main_net
 
   # akhq (kafka management UI)
   akhq:
     container_name: akhq-kafka-ui
-    image: tchiotludo/akhq:0.21.0
+    image: tchiotludo/akhq:latest
     depends_on:
       - kafka_broker
     environment:
@@ -230,5 +233,20 @@ services:
       - mongodb2:/data2/db
     ports:
       - 27030:27017
+    networks:
+      - main_net
+
+  # datadog agent
+  datadog:
+    image: ghcr.io/datadog/dd-apm-test-agent/ddapm-test-agent:latest
+    ports:
+      - "8125:8125/udp"
+      - "8126:8126"
+    container_name: dd-agent
+    restart: always
+    environment:
+      - SNAPSHOT_CI=0
+    volumes:
+      - $PWD/tests/snapshots:/snapshots
     networks:
       - main_net
