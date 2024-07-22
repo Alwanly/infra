@@ -1,0 +1,17 @@
+http {
+    upstream backend {
+        server host.docker.internal:9900; // port running server in local 
+    }
+
+    server {
+        listen 9000;  # NGINX listens on port 9000
+
+        location /example/ {
+            proxy_pass http://backend; 
+        }
+    }
+}
+
+events {
+    worker_connections 1024;
+}
