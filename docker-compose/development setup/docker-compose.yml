@@ -1,5 +1,3 @@
-version: "3.0"
-
 # --- networking
 networks:
   main_net:
@@ -42,7 +40,6 @@ services:
   mongodb:
     container_name: mongodb
     image: mongo:4.4
-    command: ["--replSet", "my-replica-set", "--bind_ip_all"]
     ports:
       - 27017:27017
     # environment:
@@ -52,9 +49,7 @@ services:
       - main_net
     volumes:
       - mongodb:/data/db
-      - ./rs-init.sh:/scripts/rs-init.sh
-    links:
-      - mongodb2
+
   # minio
   minio:
     container_name: minio

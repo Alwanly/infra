@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Change this password!
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    network_mode: "host" # Needed for Raspberry Pi, so it can access host metrics
+    command:
+      - '--collector.cpu'
+      - '--collector.meminfo'
+      - '--collector.netdev'
+      - '--collector.diskstats'
+    ports:
+      - "9100:9100"
+
+networks:
+  monitoring:
+    driver: bridge
