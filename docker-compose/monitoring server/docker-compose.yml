@@ -1,43 +1,55 @@
-version: '3'
+version: '1'
 
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
 services:
   prometheus:
-    image: prom/prometheus:latest
+    image: docker.io/prom/prometheus:v3.4.1
     container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
-    networks:
-      - monitoring
+      - 9090:9090
+    volumes:
+      - /etc/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:latest
+    image: docker.io/grafana/grafana-oss:12.0.1
     container_name: grafana
-    restart: unless-stopped
     ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin # Change this password!
-    networks:
-      - monitoring
-    depends_on:
-      - prometheus
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
     restart: unless-stopped
-    network_mode: "host" # Needed for Raspberry Pi, so it can access host metrics
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - 9100:9100
     command:
-      - '--collector.cpu'
-      - '--collector.meminfo'
-      - '--collector.netdev'
-      - '--collector.diskstats'
-    ports:
-      - "9100:9100"
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
 
-networks:
-  monitoring:
-    driver: bridge
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /run:/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    restart: unless-stopped
