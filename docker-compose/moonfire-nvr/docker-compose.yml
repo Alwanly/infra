@@ -1,0 +1,21 @@
+version: "2.4"
+services:
+  viseron:
+    image: roflcoopter/viseron:latest
+    container_name: viseron
+    shm_size: "1024mb"
+    volumes:
+      - {{segments_path}}:/segments
+      - {{snapshots_path}}:/snapshots
+      - {{thumbnails_path}}:/thumbnails
+      - {{event_clips_path}}:/event_clips
+      - {{config_path}}:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /opt/vc/lib:/opt/vc/lib
+    devices:
+      - /dev/vchiq:/dev/vchiq
+      - /dev/vcsm:/dev/vcsm
+      - /dev/bus/usb:/dev/bus/usb
+    ports:
+      - 8004:8888
+    privileged: true

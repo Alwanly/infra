@@ -1,0 +1,48 @@
+ffmpeg:
+  camera:
+    viseron_camera:
+      name: camera
+      username: admin
+      password: password 
+      host: 192.168.1.2
+      path: /live
+      port: 554
+      fps: 12
+
+storage:
+  recorder:
+    tiers:
+      - path: /
+        events:
+          max_age:
+            days: 30
+  snapshots:
+    tiers:
+      - path: /
+        max_age:
+          days: 1
+mog2:
+  motion_detector:
+    cameras:
+      viseron_camera:
+        fps: 1
+
+darknet:
+  object_detector:
+    cameras:
+      viseron_camera:
+        fps: 1
+        scan_on_motion_only: false
+        labels:
+          - label: person
+            confidence: 0.8
+            trigger_event_recording: true
+
+nvr:
+  viseron_camera:
+
+webserver:
+  port: 8004
+
+logger:
+  default_level: debug

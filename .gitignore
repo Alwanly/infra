@@ -1,6 +1,11 @@
 
+# Config file
+*.conf
 
-nginx.conf
+# Ignore local development files
+**/.vscode
+**/.DS_Store
 
-test/*
-mimt/*
+# Docker Secrets, Environment Files
+**/secret.*
+**/.env

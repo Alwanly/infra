@@ -1,0 +1,26 @@
+---
+
+- name: Notify discord
+  hosts: "{{my_hosts |d([])}}"
+  vars:
+    notify_discord_username: ''
+    notify_discord_webhook_id: ''
+    notify_discord_token: ''
+    notify_discord_webhook_content: |-
+      **Message from `{{ inventory_hostname }}` by *Ansible* ** :tada:
+      Just a test, adjust it to your liking.
+
+      You can use any Markdown formatting here [supported by Discord](
+      https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline).
+    notify_discord_send_from_host: localhost
+  tasks:
+  - name: Send notification to Discord
+    community.general.discord:
+      username: "{{ notify_discord_username }}"
+      webhook_id: "{{ notify_discord_webhook_id }}"
+      webhook_token: "{{ notify_discord_token }}"
+      content: "{{ notify_discord_webhook_content }}"
+    delegate_to: "{{ notify_discord_send_from_host }}"
+    when:
+      - notify_discord_webhook_content | length > 0
+      - notify_discord_send_from_host is in (['localhost'] + groups['all'])
